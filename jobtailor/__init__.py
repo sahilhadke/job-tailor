@@ -1,6 +1,7 @@
 import google.generativeai as genai
 from jobtailor.utils.functions import read_prompt
 import os
+import ast
 
 
 
@@ -19,6 +20,8 @@ class JobTailor:
         self.job_description = job_description
         self.output_path = output_path
         self.prompts_dir = "/jobtailor/prompts/"
+
+        self.job_description_json = {}
 
         genai.configure(api_key=gemini_key)
         self.model = genai.GenerativeModel('gemini-pro')
@@ -40,11 +43,13 @@ class JobTailor:
     
     # function to convert job description to json
     def job_description_to_json(self):
-        job_description_prompt = read_prompt(os.getcwd() + self.prompts_dir, "job-description-to-json.txt")
+        job_description_prompt = read_prompt(os.getcwd() + self.prompts_dir, "extract-job.txt")
         
         res = self.get_response(job_description_prompt + "--" + self.job_description)
-        print("Job Description to JSON: ", res)
-        return res
+
+        data_list = ast.literal_eval(res.replace("```json", "").replace("```", "").strip())
+
+        return data_list
     
     def initiate(self):
 
@@ -52,10 +57,10 @@ class JobTailor:
         self.set_persona()
 
         # job description to json 
-        self.job_description_to_json()
+        self.job_description_json = type(self.job_description_to_json())
 
         # resume to json
-
+        
         # get tailored resume json
 
         # get cover letter json

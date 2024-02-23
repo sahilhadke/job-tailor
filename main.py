@@ -32,6 +32,7 @@ Outstanding academics (cumulative GPA greater than or equal to 3.5)
 """
 
 jt = JobTailor(resume_path, job_description, output_dir, gemini_key)
+print(jt.job_description_json)
 
 # resume_path_new = jt.get_tailored_resume()
 # coverletter_path_new = jt.get_tailored_cover_letter()
