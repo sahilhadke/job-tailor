@@ -6,7 +6,7 @@ env = load_dotenv("./.env")
 
 gemini_key = (os.getenv("GEMINI_KEY"))
 output_dir = "/Users/sahilhadke/Desktop/JobTailor/job-tailor/"
-resume_path = "/Users/sahilhadke/Desktop/JobTailor/job-tailor/resources/sahilhadke_resume_technical.pdf"
+resume_path = "/Users/sahilhadke/Desktop/JobTailor/job-tailor/resources/sahilhadke_resume.pdf"
 job_description = """
 SOFTWARE ENGINEER INTERN
 

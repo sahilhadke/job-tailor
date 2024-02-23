@@ -1,5 +1,5 @@
 import google.generativeai as genai
-from jobtailor.utils.functions import read_prompt
+from jobtailor.utils.functions import read_prompt, pdf_to_text
 import os
 import ast
 
@@ -51,15 +51,24 @@ class JobTailor:
 
         return data_list
     
+    def resume_to_json(self):
+        resume_prompt = read_prompt(os.getcwd() + self.prompts_dir, "extract-resume.txt")
+        resume_text = pdf_to_text(self.resume_path)
+        
+
+
+    
     def initiate(self):
 
         # set persona
         self.set_persona()
 
         # job description to json 
-        self.job_description_json = type(self.job_description_to_json())
+        # self.job_description_json = type(self.job_description_to_json())
 
         # resume to json
+        self.resume_to_json()
+        
         
         # get tailored resume json
 
