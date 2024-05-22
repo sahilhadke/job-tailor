@@ -5,33 +5,67 @@ from dotenv import load_dotenv
 env = load_dotenv("./.env")
 
 gemini_key = (os.getenv("GEMINI_KEY"))
-output_dir = "/Users/sahilhadke/Desktop/JobTailor/job-tailor/"
-resume_path = "/Users/sahilhadke/Desktop/JobTailor/job-tailor/resources/sahilhadke_resume.pdf"
+output_dir = "./output/"
+resume_path = "./resources/sahilhadke_resume.pdf"
+
 job_description = """
-SOFTWARE ENGINEER INTERN
-
-11596
-Chandler, Arizona
-Core Business Hours
-Intern
 Overview
+Are you interested in our summer 2025 Software Engineering internship? Apply here, and we will reach out to you in late summer when recruiting begins.
 
-We are seeking a full-time Software Engineer Intern  in our Chandler, AZ location. In this role, you will be responsible for learning and training to develop software for Garmin's communication and navigation products under supervision.
-Essential Functions
-Learn to develop software using C, C++, C#, Java, assembly language, or other selected languages
-Learn to test software using debuggers, emulators, simulators, and logic analyzers
-Learn to perform software releases and software quality assurance activities
-Learn to perform maintenance activities for products already in production in addition to new product software design
-Basic Qualifications
-Completed coursework in Computer Science, Electrical Engineering, Computer Engineering, or a related field
-Excellent academics (cumulative GPA greater than or equal to 3.0 as a general rule)
-Must possess relevant experience and/or training in languages such as C, C++, C# or Java
-Must possess relevant experience and/or training in data structures or object oriented design methodology
-Desired Qualifications
-Outstanding academics (cumulative GPA greater than or equal to 3.5)
+ 
+
+SIG is looking for highly motivated full-time students for our 10-week software engineering summer internship program. As a software engineering intern, you’ll be part of a team that builds some of the most powerful trading systems in the finance industry. You will work alongside our experienced software engineers on the development, delivery, support, and enhancements of our trading systems and infrastructure.
+
+ 
+
+Throughout the summer, you will have the chance to work on challenging projects that will be pushed into production. You’ll also meet with senior technologists to learn about SIG technology and how it impacts our trading strategies.
+
+ 
+
+To learn more about what it’s like to work at SIG, check out our campus programs site, where you can take a virtual office tour, meet some of our employees, and learn more about our unique culture!
+
+ 
+
+
+What we're looking for
+Students pursuing a BS or MS in Computer Science, Computer Engineering or a similar major
+Intention to graduate with a bachelor’s or master’s degree within one year of the internship program
+Strong software development skills in any object oriented language (we use C++, Python, and C# the most)
+Knowledge of algorithms, data structures, and object-oriented design patterns
+A passion for technology and a tinkering spirit
+Exceptional problem solving skills
+This internship will be a fully in-person experience in our Philadelphia-area headquarters.
+
+ 
+
+INTERN PERKS:
+
+Fully-furnished housing provided for duration of internship
+Relaxed dress code: jeans and sneakers are the norm and shorts all summer long
+A 9,000 square-foot gym with cardio, cross fit, and strength machines
+Social events such as dinners in Philadelphia, sporting events, and more!
+Discounts for shopping, travel, dining, entertainment, and attractions
+On-site services such as dry cleaning, auto repair and detailing, barber, and ATM
+On-site Wellness Center staffed with full-time Nurse Practitioner
+Follow us on Instagram at @workingatsig to check out what our interns have been up to this summer!
+
+ 
+
+ABOUT SIG:
+
+ 
+
+SIG is a global quantitative trading firm founded with a growth mindset and an analytical approach to decision making. As one of the largest proprietary trading firms in the world, SIG benefits the financial markets by providing liquidity and ensuring competitive prices for buyers and sellers. SIG brings together the brightest minds, the best technology, and an expansive library of data to design and implement quantitative trading strategies that make us leaders in the financial markets. Beyond trading, SIG is active in global private equity, institutional brokerage, sports analytics, and structured capital.
+
+ 
+
+SIG does not accept unsolicited resumes from recruiters or search firms. Any resume or referral submitted in the absence of a signed agreement will become the property of SIG and no fee will be paid.
 """
 
 jt = JobTailor(resume_path, job_description, output_dir, gemini_key)
+print(jt.resume_json)
+print(type(jt.resume_json))
+print('end')
 
 # resume_path_new = jt.get_tailored_resume()
 # coverletter_path_new = jt.get_tailored_cover_letter()

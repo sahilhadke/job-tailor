@@ -1,13 +1,13 @@
 import google.generativeai as genai
 from jobtailor.utils.functions import read_prompt
 import os
-import ast
 import PyPDF2
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 nltk.download('punkt')
 nltk.download('stopwords')
+import json
 
 class JobTailor:
     """
@@ -26,14 +26,18 @@ class JobTailor:
         self.output_path = output_path
         self.prompts_dir = "/jobtailor/prompts/"
 
-        self.job_description_json = {}
-        self.resume_json = {}
-
+        # initialize genai
         genai.configure(api_key=gemini_key)
         self.model = genai.GenerativeModel('gemini-pro')
         self.chat = self.model.start_chat(history=[])
 
-        self.initiate()
+        # set persona
+        self.set_persona()
+
+        # extract job description and resume to json
+        # self.job_description_json = self.job_description_to_json()
+        self.resume_json = self.resume_to_json()
+
 
     # function to send prompt to gpt and get response
     def get_response(self, prompt):
@@ -55,11 +59,11 @@ class JobTailor:
         
         res = self.get_response(job_description_prompt + "--" + self.job_description)
 
-        data_list = ast.literal_eval(res.replace("```json", "").replace("```", "").strip())
+        # data_list = ast.literal_eval(res)
         
         # print("Job Description JSON: ", data_list)
 
-        return data_list
+        return res.replace("```json", "").replace("```", "")
     
     # function to convert resume to json
     def resume_to_json(self):
@@ -77,21 +81,30 @@ class JobTailor:
             for page in pdf_reader.pages:
                 # Extract text from the page and add it to the full_text variable
                 full_text += page.extract_text() + "\n"
-        
-            print("Full Text: ", full_text)
 
             # remove stopwords
             stop_words = set(stopwords.words('english'))
             word_tokens = word_tokenize(full_text)
             filtered_text = [w for w in word_tokens if not w.lower() in stop_words]
             filtered_resume = ' '.join(filtered_text)
-            print("Filtered Resume Text: ", filtered_resume)
+
+            resume_extract_prompt = read_prompt(os.getcwd() + self.prompts_dir, "extract-resume.txt")
+        
+            res = self.get_response(resume_extract_prompt + "--" + filtered_resume)
+
+            res = res.replace("```json", "").replace("```", "")
+
+            print(res)
+
+            data = json.loads(res)
+
+            return data
 
 
     def initiate(self):
         print("===called initiate===")
         # set persona
-        self.set_persona()
+        
 
         # job description to json 
         self.job_description_json = (self.job_description_to_json())
