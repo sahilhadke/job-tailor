@@ -16,7 +16,7 @@ interface Education {
   university: string;
   date_of_completion: string;
   grade?: string;
-  coursework?: string[];
+  coursework?: string;
 }
 
 interface SkillSection {

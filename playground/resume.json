@@ -1,0 +1,121 @@
+{
+    "name": "Sahil Yogesh Hadke",
+    "email": "shadke1@asu.edu",
+    "phone": "+1-6026936593",
+    "website": "https://sahil.hadke.in/",
+    "location": "Tempe, AZ",
+    "education": [
+      {
+        "degree": "Masters Science - Computer Science",
+        "university": "Arizona State University, USA",
+        "location": "Tempe, AZ",
+        "grade": "4.3/4",
+        "date_of_completion": "December 2025",
+        "coursework": "Semantic Web Mining, Data Visualization, Knowledge Representation Reasoning"
+      },
+      {
+        "degree": "Bachelor Engineering Computer Engineering",
+        "university": "Savitribai Phule Pune Univeristy, Pune, India",
+        "date_of_completion": "May 2022",
+        "location": "Pune, India",
+        "grade": "9.7/10",
+        "coursework": "Database Management, Artificial Intelligence, Data Structures and Algorithms"
+      }
+    ],
+    "skill_section": [
+      {
+        "name": "Programming Languages",
+        "skills": ["Python", "Java", "C++", "JavaScript", "PHP", "C#"]
+      },
+      {
+        "name": "Database",
+        "skills": ["MongoDB", "SQL"]
+      },
+      {
+        "name": "Frameworks Tools",
+        "skills": ["Node", "Express", "React", "CodeIgniter", "Web Scraping", "Selenium", "Unity 3D", "HTML", "CSS", "Bootstrap", "RPA", "Powershell", "VBA", "AWS", "Langchain", "LLM"]
+      }
+    ],
+    "work_experience": [
+      {
+        "role": "Software Engineer",
+        "company": "FIS",
+        "from": "May 2022",
+        "to": "December 2023",
+        "description": [
+          "Saved 1500 hours developing and implementing automated funding booking system using Selenium Java.",
+          "Contributed 750 hours/year savings automating web-based project management processes using SAFAL VBA, garnering recognition efficiency improvements.",
+          "Worked Agile environment, following Agile principles and practices project execution.",
+          "Acted key liaison development team clients, ensuring clear understanding project requirements delivering solutions exceeded client expectations.",
+          "Played key role fostering team bonding lead Fun Committee, organizing multiple successful events strengthened team cohesion morale.",
+          "Mentored and trained junior team member SAFAL, contributing professional development skill enhancement."
+        ]
+      },
+      {
+        "role": "Full Stack Developer - Internship",
+        "company": "OG Advertising Private Limited",
+        "from": "December 2020",
+        "to": "June 2022",
+        "description": [
+          "Led 80% reduction manual efforts developing web application automated invoice generation, streamlining invoicing process clients.",
+          "Collaborated prestigious educational institutes India, delivering custom website solutions met unique demands.",
+          "Worked AWS EC2 Instances, utilizing Web Host Manager cPanel website hosting, contributing enhanced performance reliability.",
+          "Led client engagement efforts, working closely diverse clientele understand fulfill specific requirements.",
+          "Acted primary point contact clients, answering phone calls, providing assistance support requests professional manner.",
+          "Supervised and mentored 2 interns, providing guidance support throughout internship tenure."
+        ]
+      },
+      {
+        "role": "Studio Associate",
+        "company": "Next Lab ASU",
+        "from": "April 2024",
+        "to": "Present",
+        "description": [
+          "Collaborated closely Unity 3D C# developers integrate system functionalities seamlessly game development projects, ensuring optimal performance compatibility project requirements.",
+          "Utilized GitHub effective collaboration version control, facilitating streamlined workflows enabling transparent communication within team.",
+          "Worked collaboratively music design teams integrate audiovisual assets game projects, ensuring cohesive immersive gameplay experiences end-users"
+        ]
+      }
+    ],
+    "projects": [
+      {
+        "name": "JobTailor - Personalized Resume Cover Letter Solution",
+        "description": [
+          "Developed automated system using Python, LLM APIs, web scraping, text mining streamline customization resumes cover letters.",
+          "Implemented feature analyzes job descriptions using text mining techniques provides metrics similarity tailored resume job requirements.",
+          "Ensured project’ end-to-end functionality, web scraping job listings parsing input documents generating final tailored resumes cover letters PDF format."
+        ]
+      },
+      {
+        "name": "RAG Application",
+        "description": [
+          "Developed Retrieval-Augmented Generation (RAG) application: Leveraged LangChain create web-based RAG model, enhancing text generation relevant retrieved content.",
+          "Implemented recursive web crawler: Designed deployed recursive web crawler gather preprocess data multiple webpages comprehensive data coverage."
+        ]
+      },
+      {
+        "name": "Password Manager - Secure MERN Password Management Solution",
+        "description": [
+          "Developed secure password manager using MERN (MongoDB, Express.js, React, Node.js) stack store manage user passwords.",
+          "Implemented encryption using bcrypt ensure security stored passwords, protecting user data unauthorized access.",
+          "Designed intuitive user interface using React easy navigation efficient password management, enhancing user experience."
+        ]
+      },
+      {
+        "name": "Dijkstra’ Algorithm Visualisation",
+        "description": [
+          "Implemented Dijkstra’ pathfinding algorithm Unity3D using C#, enabling users interactively select start end points obstacles, visualizing algorithm’ process.",
+          "Designed intuitive user interface allows players dynamically set environment observe algorithm’ pathfinding action.",
+          "Enhanced user experience providing real-time feedback shortest path found, showcasing algorithm’ efficiency effectiveness."
+        ]
+      },
+      {
+        "name": "Customer Relationship Management Tool",
+        "description": [
+          "Developed custom CRM tool using CodeIgniter, PHP, MySQL, Bootstrap, utilized multiple educational institutes Pune manage leads admission campaigns, resulting 70% reduction manual efforts.",
+          "Implemented lead aggregation various sources, including websites, Facebook, Google, centralized dashboard accessible faculty members efficient lead management.",
+          "Enhanced administrative oversight providing insights lead closure rates per faculty, improving strategic decision-making campaign effectiveness."
+        ]
+      }
+    ]
+  }
