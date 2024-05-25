@@ -1,0 +1,5 @@
+Based on the given job description and given work experience of a candidate. 
+Give me output as the work experience relevant for the job based on the description inlcuding keywords as required.
+the output should be in the same format as the input.
+Limit the output to 3 work experience with 3 bullet points each.
+Rewrite the bullet points such that they have all the important data which can be important for the candidate to get the job.

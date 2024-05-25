@@ -35,8 +35,10 @@ class JobTailor:
         self.set_persona()
 
         # extract job description and resume to json
-        # self.job_description_json = self.job_description_to_json()
+        self.job_description_json = self.job_description_to_json()
         self.resume_json = self.resume_to_json()
+        self.tailored_resume = self.get_tailored_resume()
+        self.tailored_resume_path = self.generate_resume_pdf()
 
 
     # function to send prompt to gpt and get response
@@ -58,10 +60,6 @@ class JobTailor:
         job_description_prompt = read_prompt(os.getcwd() + self.prompts_dir, "extract-job.txt")
         
         res = self.get_response(job_description_prompt + "--" + self.job_description)
-
-        # data_list = ast.literal_eval(res)
-        
-        # print("Job Description JSON: ", data_list)
 
         return res.replace("```json", "").replace("```", "")
     
@@ -99,23 +97,51 @@ class JobTailor:
             data = json.loads(res)
 
             return data
-
-
-    def initiate(self):
-        print("===called initiate===")
-        # set persona
         
+    def get_tailored_resume(self):
+        print("===called get_tailored_resume===")
+        tailored_resume = self.resume_json
 
-        # job description to json 
-        self.job_description_json = (self.job_description_to_json())
+        # get tailored skills
+        print("===tailoring the skills===")
+        skills_json = {"skills": tailored_resume["skills"]}
 
-        # resume to json
-        self.resume_to_json()
-        # get tailored resume json
+        tailored_resume_skills_prompt = read_prompt(os.getcwd() + self.prompts_dir, "tailored-skills.txt")
+        
+        tailord_skills = self.get_response(tailored_resume_skills_prompt + "--\n<given_job_description>" + json.dumps(self.job_description_json) + "\n</given_job_description>\n--\n<given_skills>" + json.dumps(skills_json) + "\n</given_skills>")
 
-        # get cover letter json
+        tailord_skills = tailord_skills.replace("```json", "").replace("```", "")
+        tailord_skills_json = json.loads(tailord_skills)
 
-        # convert resume json to pdf
+        tailored_resume["skills"] = tailord_skills_json["skills"]
 
-        # convert cover letter json to pdf
 
+        print("===tailoring the work experience===")
+        work_exp_json = {"work_experience": tailored_resume["work_experience"]}
+
+        tailored_resume_workex_prompt = read_prompt(os.getcwd() + self.prompts_dir, "tailored-experience.txt")
+        
+        tailord_workex = self.get_response(tailored_resume_workex_prompt + "--\n<given_job_description>" + json.dumps(self.job_description_json) + "\n</given_job_description>\n--\n<given_work_experience>" + json.dumps(work_exp_json) + "\n</given_work_experience>")
+
+        tailord_workex = tailord_workex.replace("```json", "").replace("```", "")
+        tailord_workex_json = json.loads(tailord_workex)
+
+        tailored_resume["work_experience"] = tailord_workex_json["work_experience"]
+
+        print("===tailoring the projects===")
+        projects_json = {"projects": tailored_resume["projects"]}
+
+        tailored_resume_project_prompt = read_prompt(os.getcwd() + self.prompts_dir, "tailored-projects.txt")
+        
+        tailord_projects = self.get_response(tailored_resume_project_prompt + "--\n<given_job_description>" + json.dumps(self.job_description_json) + "\n</given_job_description>\n--\n<projects>" + json.dumps(projects_json) + "\n</projects>")
+
+        tailord_projects = tailord_projects.replace("```json", "").replace("```", "")
+        tailord_projects_json = json.loads(tailord_projects)
+
+        tailored_resume["projects"] = tailord_projects_json["projects"]
+
+        return tailored_resume
+
+    def generate_resume_pdf(self):
+        pass
+        # return resume_path_new

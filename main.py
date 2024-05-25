@@ -1,6 +1,7 @@
 import os
 from jobtailor import JobTailor
 from dotenv import load_dotenv
+import json
 
 env = load_dotenv("./.env")
 
@@ -63,8 +64,10 @@ SIG does not accept unsolicited resumes from recruiters or search firms. Any res
 """
 
 jt = JobTailor(resume_path, job_description, output_dir, gemini_key)
-print(jt.resume_json)
+print(jt.tailored_resume)
 print(type(jt.resume_json))
+with open("tailored.json", "w") as outfile: 
+    json.dump(jt.tailored_resume, outfile)
 print('end')
 
 # resume_path_new = jt.get_tailored_resume()

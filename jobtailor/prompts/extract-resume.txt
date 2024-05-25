@@ -14,14 +14,15 @@ Consider following TypeScript Interface for JSON schema:
 interface Education {
   degree: string;
   university: string;
+  location: string;
   date_of_completion: string;
-  grade?: string;
+  grade: string;
   coursework?: string;
 }
 
-interface SkillSection {
+interface Skill {
   name: string;
-  skills: string[];
+  skills: string;
 }
 
 interface Work {
@@ -34,6 +35,7 @@ interface Work {
 
 interface Project {
   name: string;
+  techstack: string;
   description: string[];
 }
 
@@ -44,7 +46,7 @@ interface RESUME_DATA_SCHEMA {
   website: string;
   location: string;
   education: Education[];
-  skill_section: SkillSection[];
+  skills: Skill[];
   work_experience: Work[];
   projects: Project[];
 }

@@ -1,0 +1,3 @@
+1. in json returned from llm, relevant coursework and skills are array.
+    convert them to a string before tex conversion
+2. escape all characters & to /& and # to /# in tex file
