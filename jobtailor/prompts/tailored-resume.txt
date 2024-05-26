@@ -1,3 +1,0 @@
-Based on the given master resume and the job description, Give me a tailored resume in the same JSON format as the master resume.
-The tailored resume should have relevant coursework for education, 3 work experiences and 3 projects.
-for project and work experience, limit to only 3 bullet points. All the information should be tailored for this specific job description. Add relevant keywords as well.

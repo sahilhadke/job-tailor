@@ -55,7 +55,7 @@
 
 % Sections formatting
 \titleformat{\section}{
-  \vspace{-9pt}\scshape\raggedright\large
+  \vspace{-11pt}\scshape\raggedright\large
 }{}{0em}{}[\color{black}\titlerule \vspace{-1pt}]
 
 % Ensure that generate pdf is machine readable/ATS parsable
@@ -137,8 +137,8 @@
   {% raw %}
   \resumeSubheadingUpdated
   {% endraw %}{% raw %}{{% endraw %}{{education.university}}{% raw %}}{{% endraw %}{{education.date_of_completion}}{% raw %}}
-    {{% endraw %}{{education.degree}}{% raw %}}{{% endraw %}{{education.grade}}{% raw %}}
-    {Relevant Courses:{{% endraw %}{{ education.coursework}}}
+    {{% endraw %}{{education.degree_and_program}}{% raw %}}{{% endraw %}{{education.grade}}{% raw %}}
+    {Relevant Courses:{{% endraw %}{{ education.coursework | replace('&', '\&')}}}
     {% raw %}}{% endraw %}{% endfor %}{% raw %}
   \resumeSubHeadingListEnd
 
@@ -148,7 +148,7 @@
 \section{Technical Skills}
  \begin{itemize}[leftmargin=0.15in, label={}]
     \small{\item{{% endraw %}
-    {% for category in skill_section %}{% raw %}\textbf{{% endraw %}{{category.name}}{% raw %}}{: {% endraw %}{{category.skills | replace('#', '\#')}}{% raw %}} \\ {% endraw %}{% endfor %}{% raw %} 
+    {% for category in skills %}{% raw %}\textbf{{% endraw %}{{category.name}}{% raw %}}{: {% endraw %}{{category.skills | replace('#', '\#')}}{% raw %}} \\ {% endraw %}{% endfor %}{% raw %} 
     }}
  \end{itemize}
 
@@ -176,7 +176,7 @@
       
     {%endraw%}{% for proj in projects %}{% raw %}   
     \resumeProjectHeading
-    {\textbf{{% endraw %}{{proj.name}}{% raw %}} \\ \emph{{% endraw %}{{proj.techstack | replace('#', '\#') | replace('%', '\%')}}{% raw %}}}{}
+    {\textbf{{% endraw %}{{proj.name}}{% raw %}}}{}
       \resumeItemListStart
       {% endraw %}{% for point in proj.description %}{% raw %}
         \resumeItem{{% endraw %}{{point | replace('#', '\#') | replace('%', '\%')}}{% raw %}}

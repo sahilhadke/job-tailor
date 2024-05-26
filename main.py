@@ -6,8 +6,7 @@ import json
 env = load_dotenv("./.env")
 
 gemini_key = (os.getenv("GEMINI_KEY"))
-output_dir = "./output/"
-resume_path = "./resources/sahilhadke_resume.pdf"
+resume_path = "./jobtailor/resources/sahilhadke_resume.pdf"
 
 job_description = """
 Overview
@@ -63,12 +62,8 @@ SIG is a global quantitative trading firm founded with a growth mindset and an a
 SIG does not accept unsolicited resumes from recruiters or search firms. Any resume or referral submitted in the absence of a signed agreement will become the property of SIG and no fee will be paid.
 """
 
-jt = JobTailor(resume_path, job_description, output_dir, gemini_key)
-print(jt.tailored_resume)
-print(type(jt.resume_json))
-with open("tailored.json", "w") as outfile: 
-    json.dump(jt.tailored_resume, outfile)
-print('end')
+jt = JobTailor(resume_path, job_description, gemini_key)
+print("FINAL = " + jt.tailored_resume_path)
 
 # resume_path_new = jt.get_tailored_resume()
 # coverletter_path_new = jt.get_tailored_cover_letter()
