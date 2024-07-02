@@ -24,7 +24,7 @@ Provide JSON object as output like following:
 "skills": [
     {
       "name": "Programming Languages",
-      "skills": ["Python", "JavaScript", "C#", and so on ...]
+      "skills": ["Python", "JavaScript", so on ...]
     },
     {
       "name": "Database",

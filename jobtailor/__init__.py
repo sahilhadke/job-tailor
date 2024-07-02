@@ -2,14 +2,12 @@ import google.generativeai as genai
 from jobtailor.utils.functions import read_prompt
 import os
 import PyPDF2
-import nltk
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-nltk.download('punkt')
-nltk.download('stopwords')
 import json
 from jinja2 import Environment, FileSystemLoader
 import shutil
+from jobtailor.utils.functions import process_json, replace_placeholders
+from docx import Document
+import time
 
 module_dir = os.path.dirname(__file__)
 pdflatex_path = "/usr/local/texlive/2024/bin/universal-darwin/pdflatex"
@@ -40,7 +38,7 @@ class JobTailor:
         # initialize genai
         genai.configure(api_key=gemini_key)
         self.model = genai.GenerativeModel('gemini-pro')
-        self.chat = self.model.start_chat(history=[])
+        self.chat = self.model.start_chat()
 
         # set persona
         self.set_persona()
@@ -62,9 +60,13 @@ class JobTailor:
         self.tailored_resume = self.get_tailored_resume()
         self.tailored_resume_path = self.generate_resume_pdf()
 
+        # generate cover letter
+        self.tailored_coverletter_path = self.get_tailored_coverletter()
+
 
     # function to send prompt to gpt and get response
     def get_response(self, prompt):
+        time.sleep(5)
         try:
             response = self.chat.send_message(prompt)
             return response.text
@@ -83,7 +85,7 @@ class JobTailor:
         
         res = self.get_response(job_description_prompt + "--" + self.job_description)
 
-        return res.replace("```json", "").replace("```", "")
+        return res.replace("```json", "").replace("```JSON", "").replace("```", "")
     
     # function to convert resume to json
     def resume_to_json(self):
@@ -102,19 +104,12 @@ class JobTailor:
                 # Extract text from the page and add it to the full_text variable
                 full_text += page.extract_text() + "\n"
 
-            # remove stopwords
-            stop_words = set(stopwords.words('english'))
-            word_tokens = word_tokenize(full_text)
-            filtered_text = [w for w in word_tokens if not w.lower() in stop_words]
-            filtered_resume = ' '.join(filtered_text)
 
             resume_extract_prompt = read_prompt(self.prompts_dir, "extract-resume.txt")
         
-            res = self.get_response(resume_extract_prompt + "--" + filtered_resume)
+            res = self.get_response(resume_extract_prompt + "--" + full_text)
 
-            res = res.replace("```json", "").replace("```", "").replace("None","").replace("JSON\n", "")
-
-            print(res)
+            res = res.replace("```json", "").replace("```JSON", "").replace("```", "").replace("None","").replace("JSON\n", "")
 
             data = json.loads(res)
 
@@ -131,61 +126,53 @@ class JobTailor:
 
         tailored_resume_skills_prompt = read_prompt(self.prompts_dir, "tailored-skills.txt")
         
-        tailord_skills = self.get_response(tailored_resume_skills_prompt + "--\n<JOB_DETAIL>" + json.dumps(self.job_description_json) + "\n</JOB_DETAIL>\n--\n<SKILLS>" + json.dumps(skills_json) + "\n</SKILLS>")
+        tailord_skills_response = self.get_response(tailored_resume_skills_prompt + "--\n<JOB_DETAIL>" + json.dumps(self.job_description_json) + "\n</JOB_DETAIL>\n--\n<SKILLS>" + json.dumps(skills_json) + "\n</SKILLS>")
 
-        tailord_skills = tailord_skills.replace("```json", "").replace("```", "")
-        tailord_skills_json = json.loads(tailord_skills)
-
-        # tailored_resume["skills"] = tailord_skills_json["skills"]
-
+        tailord_skills_json = json.loads(tailord_skills_response.replace("```json", "").replace("```JSON", "").replace("```", ""))
+        
+        tailored_resume["skills"] = tailord_skills_json["skills"]
 
         print("===tailoring the work experience===")
         work_exp_json = {"work_experience": tailored_resume["work_experience"]}
 
         tailored_resume_workex_prompt = read_prompt(self.prompts_dir, "tailored-experience.txt")
         
-        tailord_workex = self.get_response(tailored_resume_workex_prompt + "--\n<JOB_DETAIL>" + json.dumps(self.job_description_json) + "\n</JOB_DETAIL>\n--\n<WORK>" + json.dumps(work_exp_json) + "\n</WORK>")
+        tailord_workex_response = self.get_response(tailored_resume_workex_prompt + "--\n<JOB_DETAIL>" + json.dumps(self.job_description_json) + "\n</JOB_DETAIL>\n--\n<WORK>" + json.dumps(work_exp_json) + "\n</WORK>")
 
-        tailord_workex = tailord_workex.replace("```json", "").replace("```", "")
-        tailord_workex_json = json.loads(tailord_workex)
-
+        tailord_workex_json = json.loads(tailord_workex_response.replace("```json", "").replace("```JSON", "").replace("```", ""))
+        
         tailored_resume["work_experience"] = tailord_workex_json["work_experience"]
 
         print("===tailoring the projects===")
         projects_json = {"projects": tailored_resume["projects"]}
 
         tailored_resume_project_prompt = read_prompt(self.prompts_dir, "tailored-projects.txt")
-        
-        tailord_projects = self.get_response(tailored_resume_project_prompt + "--\n<JOB_DETAIL>" + json.dumps(self.job_description_json) + "\n</JOB_DETAIL>\n--\n<PROJECTS>" + json.dumps(projects_json) + "\n</PROJECTS>")
 
-        tailord_projects = tailord_projects.replace("```json", "").replace("```", "")
-        tailord_projects_json = json.loads(tailord_projects)
+        tailord_projects_response = self.get_response(tailored_resume_project_prompt + "--\n<JOB_DETAIL>" +  json.dumps(self.job_description_json) + "\n</JOB_DETAIL>\n--\n<PROJECTS>" + json.dumps(projects_json) + "\n</PROJECTS>")
 
+        tailord_projects_json = json.loads(tailord_projects_response.replace("```json", "").replace("```JSON", "").replace("```", ""))
         tailored_resume["projects"] = tailord_projects_json["projects"]
 
         return tailored_resume
 
     def generate_resume_pdf(self):
+
         # Set up the Jinja2 environment
         file_loader = FileSystemLoader('.')
         env = Environment(loader=file_loader)
 
         # Load the LaTeX template
-       
         try:
 
             # template_path = os.path.join(self.resources_dir, "jakes_template.tex")
             # template = env.get_template(template_path)
             # Render the template with the data
             template = env.get_template('./jobtailor/resources/jakes_template.tex')
-            rendered_tex = template.render(self.tailored_resume)
+            rendered_tex = template.render(process_json(self.tailored_resume))
         except Exception as e:
             print(f"Error: {e}")
             print(f"Current working directory: {os.getcwd()}")
-            print(f"Expected template path: {os.path.join(module_dir, 'resources', template_path)}")
-
         
-
         # Write the rendered LaTeX to a file
         output_tex_path = os.path.join(self.output_dir, "curated_template.tex")
         with open(output_tex_path, 'w') as f:
@@ -195,5 +182,51 @@ class JobTailor:
         pdflatex_command = f"'{pdflatex_path}' -output-directory '{self.output_dir}' '{output_tex_path}'"
         os.system(pdflatex_command)
 
-        return os.path.join(self.output_dir, "curated_template.pdf")
+        # delete the intermediate files
+        intermediate_files = ["curated_template.aux", "curated_template.log", "curated_template.out", "curated_template.tex"]
+        for file in intermediate_files:
+            file_path = os.path.join(self.output_dir, file)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+        # rename pdf file
+        os.rename(os.path.join(self.output_dir, "curated_template.pdf"), os.path.join(self.output_dir, "jobtailor-curated-resume.pdf"))
+        
+
+        return os.path.join(self.output_dir, "jobtailor-curated-resume.pdf")
         # return resume_path_ne
+
+    # function to get the paragraph for the cover letter
+    def get_tailored_coverletter(self):
+        print("===get_tailored_coverletter===")
+        tailored_coverletter_prompt = read_prompt(self.prompts_dir, "extract-coverletter.txt")
+        
+        # tailord_coverletter_content = self.get_response(tailored_coverletter_prompt + "--\n<JOB_DETAIL>" + json.dumps(self.job_description_json) + "\n</JOB_DETAIL>\n")
+        tailord_coverletter_content = self.get_response(tailored_coverletter_prompt + "--\n<JOB_DETAIL>" + json.dumps(self.job_description_json) + "\n</JOB_DETAIL>\n--\n<WORK_INFORMATION>" + json.dumps(self.tailored_resume) + "\n</WORK_INFORMATION>")
+        tailord_coverletter_content = tailord_coverletter_content.replace("```json", "").replace("```JSON", "").replace("```", "")
+
+        replacements = {
+            "{{name}}": self.tailored_resume["name"],
+            "{{location}}": self.tailored_resume["location"],
+            "{{email}}": self.tailored_resume["email"],
+            "{{phone}}": self.tailored_resume["phone"],
+            "{{website}}": self.tailored_resume["website"],
+            "{{coverletter_content}}": tailord_coverletter_content
+        }
+
+        coverletter_template_path = os.path.join(self.resources_dir, "jobtailor-coverletter.docx")
+        coverletter_curated_path = os.path.join(self.output_dir, "jobtailor-curated-coverletter.docx")
+        doc = Document(coverletter_template_path)
+
+        # Replace placeholders with actual values
+        replace_placeholders(doc, replacements)
+
+        # Save the resulting document
+        doc.save(coverletter_curated_path)
+
+        return coverletter_curated_path

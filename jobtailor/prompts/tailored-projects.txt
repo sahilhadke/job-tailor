@@ -4,11 +4,12 @@ Step to follow:
 1. Analyze my project details to match job requirements.
 2. Create a JSON resume section that highlights strongest matches
 3. Optimize JSON section for clarity and relevance to the job description.
+4. Do not use any special symbols like &, #, $, etc.
 
 Instructions:
-1. Focus: Craft 2 highly relevant project experiences aligned with the job description. THIS IS IMPORTANT, 2 highly relevant projects
+1. Focus: Craft 2 highly relevant project experiences aligned with the job description. THIS IS IMPORTANT, 3 highly relevant projects
 2. Content:
-  2.1. Bullet points: 3 per experience, closely mirroring job requirements. THIS IS IMPORTANT, 3 bullet points per experience
+  2.1. Bullet points: 2 per project, closely mirroring job requirements. THIS IS IMPORTANT, 3 bullet points per experience. Every bullet point must have 20-25 words.
   2.2. Impact: Quantify each bullet point for measurable results.
   2.3. Storytelling: Utilize STAR methodology (Situation, Task, Action, Result) implicitly within each bullet point.
   2.4. Action Verbs: Showcase soft skills with strong, active verbs.
@@ -34,10 +35,10 @@ Desired Output:
 Provide JSON object as output like following:
 "projects": [
     {
-      "name": "JobTailor - Personalized Resume Cover Letter Solution",
+      "name": "project name",
       "description": [
-        "Developed an automated system using Python, LLM APIs, web scraping, and text mining to streamline the customization of resumes and cover letters.",
-        "Implemented a feature that analyzes job descriptions using text mining techniques and provides metrics on similarity to tailor resumes to job requirements.",
+        "bullet point",
+        "bullet point",
         and So on ...
       ]
     },

@@ -4,11 +4,12 @@ Step to follow:
 1. Analyze my Work details to match job requirements.
 2. Create a JSON resume section that highlights strongest matches
 3. Optimize JSON section for clarity and relevance to the job description.
+4. Do not use any special symbols like &, #, $, etc.
 
 Instructions:
 1. Focus: Shortlist 3 highly relevant work experiences aligned with the job description. THIS IS IMPORTANT, Craft 3 highly relevant work experiences.
 2. Content:
-  2.1. Bullet points: 3 per experience, closely mirroring job requirements. THIS IS IMPORTANT, 3 bullet points per experience
+  2.1. Bullet points: 3 per experience, closely mirroring job requirements. THIS IS IMPORTANT, 3 bullet points per experience. Every bullet point must have 20-25 words.
   2.2. Impact: Quantify each bullet point for measurable results.
   2.3. Storytelling: Utilize STAR methodology (Situation, Task, Action, Result) implicitly within each bullet point.
   2.4. Action Verbs: Showcase soft skills with strong, active verbs.
@@ -35,28 +36,25 @@ Provide JSON object as output like following:
 {
   "work_experience": [
     {
-      "role": "Software Engineer",
-      "company": "FIS",
-      "location": "Pune, India"
-      "from": "May 2022",
-      "to": "Dec 2023",
+      "role": "role name",
+      "company": "company name",
+      "location": "company location"
+      "from": "month, year",
+      "to": "month, year",
       "description": [
-        "Saved 1500 hours by developing and implementing an automated funding booking system using Selenium Java.",  
-        "Contributed to 750 hours/year savings by automating web-based project management processes using SAFAL
-VBA, resulting in efficiency improvements."  
-        and so on ...
+        "bullet point",  
+        "bullet point"
       ]
     },
     {
-      "role": "Web Technology Associate - Part Time",
-      "company": "OG Advertising Private Limited",
-      "location": "Pune, Inida"
-      "from": "Dec 2020",
-      "to": "June 2022",
+      "role": "role name",
+      "company": "company name",
+      "location": "company location"
+      "from": "month, year",
+      "to": "month, year",
       "description": [
-        "Led an 80% reduction in manual efforts by developing a web application for automated invoice generation, streamlining the invoicing process for clients.",
-        "Collaborated with prestigious educational institutes in India, delivering custom website solutions that met their unique demands.",
-        and so on ...
+        "bullet point",  
+        "bullet point"
       ]
     },
     {and so on...}

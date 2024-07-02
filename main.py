@@ -1,12 +1,11 @@
 import os
 from jobtailor import JobTailor
 from dotenv import load_dotenv
-import json
 
-env = load_dotenv("./.env")
+env = load_dotenv('.env')
 
 gemini_key = (os.getenv("GEMINI_KEY"))
-resume_path = "./jobtailor/resources/sahilhadke_resume.pdf"
+resume_path = "./jobtailor/resources/master_resume.pdf"
 
 job_description = """
 Overview
@@ -63,8 +62,5 @@ SIG does not accept unsolicited resumes from recruiters or search firms. Any res
 """
 
 jt = JobTailor(resume_path, job_description, gemini_key)
-print("FINAL = " + jt.tailored_resume_path)
-
-# resume_path_new = jt.get_tailored_resume()
-# coverletter_path_new = jt.get_tailored_cover_letter()
-# jt.get_metrics()
+print("FINAL RESUME = " + jt.tailored_resume_path)
+print("FINAL COVERLETTER = " + jt.tailored_coverletter_path)
