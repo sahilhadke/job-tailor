@@ -1,7 +1,47 @@
-# job-tailor
+# JobTailor - Personalized Resume and Cover Letter Solution
 
 
 ![Logo](https://github.com/sahilhadke/job-tailor/blob/main/resources/jobtailor-architecture.jpg)
 
-"Job Tailor" is an efficient tool that transforms your master resume and a job description into a tailored resume and cover letter. It uses smart algorithms to highlight your most relevant skills, helping you stand out to potential employers. Save time and increase your chances of landing interviews with Job Tailor.
+JobTailor is a Python package that helps you create a customized resume and cover letter based on a master resume and a specific job description. It leverages the Gemini LLM to generate tailored documents that align with the job requirements.
 
+## Features
+
+- **Input your master resume and job description**: JobTailor takes these inputs and processes them.
+- **Generate curated resume and cover letter**: The output is a resume and cover letter customized to match the job description.
+- **Easy to use**: Simple commands to generate your documents.
+
+## How to download JobTailor?
+
+- You can install the package from: https://pypi.org/project/jobtailor/
+- Alternatively, you can download the source code from: https://github.com/sahilhadke/job-tailor/
+
+## Installation
+
+Here’s how you can install and use JobTailor to generate a tailored resume and cover letter:
+
+#### Prerequisites
+
+- OS : Linux, Mac
+- Python : 3.11 and above
+- LLM API key: [Gemini API](https://ai.google.dev/)
+
+#### Package Installation and Usage
+
+```bash
+pip install jobtailor
+```
+
+```python
+from jobtailor import JobTailor
+
+jt = JobTailor(
+    "resume_path", 
+    "job_description (text)", 
+    "gemini_key", 
+    "output_dir (optional)", 
+    "pdflatex_path (optional)"
+)
+print(f"FINAL RESUME: {jt.tailored_resume_path}")
+print(f"FINAL COVERLETTER: {jt.tailored_coverletter_path}")
+```
