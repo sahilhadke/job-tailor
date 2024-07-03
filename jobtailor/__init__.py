@@ -1,31 +1,30 @@
 import google.generativeai as genai
-from jobtailor.utils.functions import read_prompt
 import os
 import PyPDF2
 import json
 from jinja2 import Environment, FileSystemLoader
 import shutil
-from jobtailor.utils.functions import process_json, replace_placeholders
 from docx import Document
 import time
+# from utils.functions import read_prompt, process_json, replace_placeholders
+from .utils.functions import process_json, replace_placeholders, read_prompt
 
 module_dir = os.path.dirname(__file__)
-pdflatex_path = "/usr/local/texlive/2024/bin/universal-darwin/pdflatex"
-jakes_template = os.path.join(module_dir, "resources", "jakes_template.tex")
-
+output_dir_default = os.path.join(module_dir, "output/")
 class JobTailor:
     """
     Input: 
     resume_path - path to the master resume file
     job_description - text of the job description
     url - boolean to indicate if the job_description is a URL (True) or a file path (False)
+    pdflatex_path (optional) - path to the pdflatex executable - Default - pdflatex
 
     Output:
     tailored_resume_path - path to the tailored resume file
     tailored_coverletter_path - path to the tailored cover letter file
     """
     
-    def __init__(self, resume_path, job_description, gemini_key):
+    def __init__(self, resume_path, job_description, gemini_key, output_dir=output_dir_default, pdflatex_path='pdflatex'):
         
         print("===called constructor===")
 
@@ -33,7 +32,12 @@ class JobTailor:
         self.job_description = job_description
         self.prompts_dir = os.path.join(module_dir, "prompts/")
         self.resources_dir = os.path.join(module_dir, "resources/")
-        self.output_dir = os.path.join(module_dir, "output/")
+        self.output_dir = output_dir
+        # if directory not present, create it
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+        # self.output_dir = os.path.join(module_dir, "output/")
+        self.pdflatex_path = pdflatex_path
 
         # initialize genai
         genai.configure(api_key=gemini_key)
@@ -120,6 +124,7 @@ class JobTailor:
         tailored_resume = self.resume_json
 
         # get tailored skills
+        """"""
         print("===tailoring the skills===")
 
         skills_json = {"skills": tailored_resume["skills"]}
@@ -152,14 +157,16 @@ class JobTailor:
 
         tailord_projects_json = json.loads(tailord_projects_response.replace("```json", "").replace("```JSON", "").replace("```", ""))
         tailored_resume["projects"] = tailord_projects_json["projects"]
-
+        
         return tailored_resume
 
     def generate_resume_pdf(self):
 
         # Set up the Jinja2 environment
-        file_loader = FileSystemLoader('.')
-        env = Environment(loader=file_loader)
+        template_dir = os.path.join(module_dir, "resources")
+        env = Environment(loader=FileSystemLoader(template_dir))
+        # file_loader = FileSystemLoader('.')
+        # env = Environment(loader=file_loader)
 
         # Load the LaTeX template
         try:
@@ -167,7 +174,8 @@ class JobTailor:
             # template_path = os.path.join(self.resources_dir, "jakes_template.tex")
             # template = env.get_template(template_path)
             # Render the template with the data
-            template = env.get_template('./jobtailor/resources/jakes_template.tex')
+            # jakes_template_path = os.path.join("./resources", "jakes_template.tex")
+            template = env.get_template("jakes_template.tex")
             rendered_tex = template.render(process_json(self.tailored_resume))
         except Exception as e:
             print(f"Error: {e}")
@@ -179,7 +187,7 @@ class JobTailor:
             f.write(rendered_tex)
 
         # compile the latex file
-        pdflatex_command = f"'{pdflatex_path}' -output-directory '{self.output_dir}' '{output_tex_path}'"
+        pdflatex_command = f"'{self.pdflatex_path}' -output-directory '{self.output_dir}' '{output_tex_path}'"
         os.system(pdflatex_command)
 
         # delete the intermediate files

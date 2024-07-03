@@ -5,7 +5,9 @@ from dotenv import load_dotenv
 env = load_dotenv('.env')
 
 gemini_key = (os.getenv("GEMINI_KEY"))
-resume_path = "./jobtailor/resources/master_resume.pdf"
+resume_path = "./resources/master_resume.pdf"
+pdflatex_path = os.getenv("PDFLATEX_PATH")
+output_dir = "./output/"
 
 job_description = """
 Overview
@@ -61,6 +63,6 @@ SIG is a global quantitative trading firm founded with a growth mindset and an a
 SIG does not accept unsolicited resumes from recruiters or search firms. Any resume or referral submitted in the absence of a signed agreement will become the property of SIG and no fee will be paid.
 """
 
-jt = JobTailor(resume_path, job_description, gemini_key)
+jt = JobTailor(resume_path, job_description, gemini_key, output_dir, pdflatex_path)
 print("FINAL RESUME = " + jt.tailored_resume_path)
 print("FINAL COVERLETTER = " + jt.tailored_coverletter_path)

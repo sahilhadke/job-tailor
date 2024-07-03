@@ -1,0 +1,1 @@
+recursive-include jobtailor *.txt *.tex *.pdf *.docx

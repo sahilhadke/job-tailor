@@ -1,1 +1,5 @@
 python-dotenv
+google.generativeai
+PyPDF2
+jinja2
+python-docx
