@@ -135,6 +135,13 @@ class JobTailor:
 
         tailord_skills_json = json.loads(tailord_skills_response.replace("```json", "").replace("```JSON", "").replace("```", ""))
         
+        tailord_skills_json["skills"] # [ {}, {}, {} ]
+        for skillset in tailord_skills_json["skills"]:
+            if type(skillset['skills']) == list:
+                converted_string = ", ".join(skillset['skills'])
+                skillset['skills'] = converted_string
+
+
         tailored_resume["skills"] = tailord_skills_json["skills"]
 
         print("===tailoring the work experience===")
