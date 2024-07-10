@@ -3,3 +3,4 @@ google.generativeai
 PyPDF2
 jinja2
 python-docx
+jobtailor
