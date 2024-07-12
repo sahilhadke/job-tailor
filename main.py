@@ -63,6 +63,10 @@ SIG is a global quantitative trading firm founded with a growth mindset and an a
 SIG does not accept unsolicited resumes from recruiters or search firms. Any resume or referral submitted in the absence of a signed agreement will become the property of SIG and no fee will be paid.
 """
 
-jt = JobTailor(resume_path, job_description, gemini_key, output_dir, pdflatex_path)
+optional_params = {
+    "output_dir": "./output/",
+    "pdflatex_path": "/usr/local/texlive/2024/bin/universal-darwin/pdflatex",
+}
+jt = JobTailor(resume_path, job_description, gemini_key, optional_params)
 print("FINAL RESUME = " + jt.tailored_resume_path)
 print("FINAL COVERLETTER = " + jt.tailored_coverletter_path)

@@ -1,16 +1,20 @@
-import google.generativeai as genai
 import os
 import PyPDF2
 import json
-from jinja2 import Environment, FileSystemLoader
 import shutil
-from docx import Document
 import time
-# from utils.functions import read_prompt, process_json, replace_placeholders
+import logging
+from docx import Document
+from jinja2 import Environment, FileSystemLoader
+import google.generativeai as genai
 from .utils.functions import process_json, replace_placeholders, read_prompt
 
+# logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename='jobtailor.log', level=logging.INFO)
+
+# get the directory of the module
 module_dir = os.path.dirname(__file__)
-output_dir_default = os.path.join(module_dir, "output/")
 class JobTailor:
     """
     Input: 
@@ -24,28 +28,50 @@ class JobTailor:
     tailored_coverletter_path - path to the tailored cover letter file
     """
     
-    def __init__(self, resume_path, job_description, gemini_key, output_dir=output_dir_default, pdflatex_path='pdflatex'):
+    def __init__(self, resume_path, job_description, gemini_key, optional_params=None):
         
-        print("===called constructor===")
+        print("called constructor")
 
+        # set mandatory parameters
         self.resume_path = resume_path
         self.job_description = job_description
+        self.gemini_key = gemini_key
+
+        # set optional parameters
+        self.output_dir = os.path.join(module_dir, "output/")
+        self.pdflatex_path = 'pdflatex'
+
+        # set default variables
         self.prompts_dir = os.path.join(module_dir, "prompts/")
         self.resources_dir = os.path.join(module_dir, "resources/")
-        self.output_dir = output_dir
-        # if directory not present, create it
+
+        # if output directory not present, create it
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
-        # self.output_dir = os.path.join(module_dir, "output/")
-        self.pdflatex_path = pdflatex_path
 
+        # if optional parameters are provided, set them
+        if optional_params:
+            for key, value in optional_params.items():
+                if hasattr(self, key):
+                    setattr(self, key, value)
+                else:
+                    setattr(self, key, value)
+        
         # initialize genai
-        genai.configure(api_key=gemini_key)
-        self.model = genai.GenerativeModel('gemini-pro')
-        self.chat = self.model.start_chat()
+        try:
+            genai.configure(api_key=self.gemini_key)
+            self.model = genai.GenerativeModel('gemini-pro')
+            self.chat = self.model.start_chat()
+        except Exception as e:
+            logger.error(f"Error: error initializing genai.\nDetailed error: {e}")
+            return f"Error: error initializing genai"
 
         # set persona
-        self.set_persona()
+        try:
+            self.set_persona()
+        except Exception as e:
+            logger.error(f"Error: error setting persona.\nDetailed error: {e}")
+            return f"Error: error setting persona"
 
         # delete existing files in output directory
         for filename in os.listdir(self.output_dir):
@@ -56,12 +82,19 @@ class JobTailor:
                 elif os.path.isdir(file_path):
                     shutil.rmtree(file_path)
             except Exception as e:
-                print('Failed to delete %s. Reason: %s' % (file_path, e))
+                logger.error(f"Error: error deleting files in output directory.\nDetailed error: {e}")
+                return ('Failed to delete %s. Reason: %s' % (file_path, e))
 
         # extract job description and resume to json
         self.job_description_json = self.job_description_to_json()
+
+        # convert resume pdf to json
         self.resume_json = self.resume_to_json()
+
+        # get tailored resume
         self.tailored_resume = self.get_tailored_resume()
+
+        # generate resume - latex to pdf
         self.tailored_resume_path = self.generate_resume_pdf()
 
         # generate cover letter
@@ -70,34 +103,51 @@ class JobTailor:
 
     # function to send prompt to gpt and get response
     def get_response(self, prompt):
+
+        # timout for 5 seconds
         time.sleep(5)
         try:
             response = self.chat.send_message(prompt)
             return response.text
         except Exception as e:
-            return str(e)
+            logger.error(f"Error: error getting response with prompt: {prompt}.\nDetailed error: {e}")
+            return f"Error: error getting response with prompt: {prompt}"
     
     def set_persona(self):
-        print("===called set_persona===")
+        logger.info("set_persona called.")
         persona_text = read_prompt(self.prompts_dir, "persona.txt")
+        logger.debug(f"set_persona text: {persona_text}")
         return self.get_response(persona_text)
     
     # function to convert job description to json
     def job_description_to_json(self):
-        print("===called job_description_to_json===")
+
+        logger.info("job_description_to_json called.")
+
         job_description_prompt = read_prompt(self.prompts_dir, "extract-job.txt")
+        logger.debug(f"job_description_prompt: {job_description_prompt}")
         
         res = self.get_response(job_description_prompt + "--" + self.job_description)
+        logger.debug(f"job_description_to_json response: {res}")
 
-        return res.replace("```json", "").replace("```JSON", "").replace("```", "")
+        try:
+            res = res.replace("```json", "").replace("```JSON", "").replace("```", "")
+        except Exception as e:
+            logger.debug(f"Error: error converting job description to json.\nres:{res}\nDetailed error: {e}")
+            logger.error(f"Error: error converting job description to json.\nDetailed error: {e}")
+            return f"Error: error converting job description to json"
+
+        return res
     
     # function to convert resume to json
     def resume_to_json(self):
-        print("===called resume_to_json===")
-        
+
+        logger.info("resume_to_json called.")
+
         # convert resume to text
         with open(self.resume_path, "rb") as file:
-        # Create a PDF reader object
+
+            # Create a PDF reader object
             pdf_reader = PyPDF2.PdfReader(file)
             
             # Initialize a variable to store all the text
@@ -108,16 +158,21 @@ class JobTailor:
                 # Extract text from the page and add it to the full_text variable
                 full_text += page.extract_text() + "\n"
 
-
             resume_extract_prompt = read_prompt(self.prompts_dir, "extract-resume.txt")
+            logger.debug(f"resume_extract_prompt: {resume_extract_prompt}")
         
             res = self.get_response(resume_extract_prompt + "--" + full_text)
+            logger.debug(f"resume_to_json response: {res}")
 
-            res = res.replace("```json", "").replace("```JSON", "").replace("```", "").replace("None","").replace("JSON\n", "")
-
-            data = json.loads(res)
-
-            return data
+            try:
+                res = res.replace("```json", "").replace("```JSON", "").replace("```", "").replace("None","").replace("JSON\n", "")
+                data = json.loads(res)
+                logger.debug(f"resume_to_json data: {data}")
+                return data
+            except Exception as e:
+                logger.error(f"Error: error converting resume to json.\nres:{res}\nDetailed error: {e}")
+                return f"Error: error converting resume to json"
+            
         
     def get_tailored_resume(self):
         print("===called get_tailored_resume===")

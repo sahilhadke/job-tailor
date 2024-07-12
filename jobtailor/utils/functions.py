@@ -1,11 +1,11 @@
 
 # function to take directory and file name as input and return the txt file contents as string
-def read_prompt(file_path, fiel_name):
+def read_prompt(file_path, file_name):
     try:
-        with open(file_path + fiel_name, 'r') as file:
+        with open(file_path + file_name, 'r') as file:
             return file.read()
     except Exception as e:
-        return str(e)
+        return f"read_prompt Error reading file:{file_path}\nDetailed Error:{e}"
     
 def escape_latex_special_chars(text):
     # List of special characters in LaTeX that need to be escaped
