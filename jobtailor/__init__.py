@@ -11,7 +11,9 @@ from .utils.functions import process_json, replace_placeholders, read_prompt
 
 # logging
 logger = logging.getLogger(__name__)
-logging.basicConfig(filename='jobtailor.log', level=logging.INFO)
+logging.basicConfig(filename='jobtailor_debug.log', level=logging.DEBUG)
+# logging.basicConfig(filename='jobtailor_info.log', level=logging.INFO)
+# logging.basicConfig(filename='jobtailor_error.log', level=logging.ERROR)
 
 # get the directory of the module
 module_dir = os.path.dirname(__file__)
@@ -20,8 +22,13 @@ class JobTailor:
     Input: 
     resume_path - path to the master resume file
     job_description - text of the job description
-    url - boolean to indicate if the job_description is a URL (True) or a file path (False)
-    pdflatex_path (optional) - path to the pdflatex executable - Default - pdflatex
+    gemini_key - API key for generative AI
+
+    Optional Input:
+    output_dir - path to the output directory
+    pdflatex_path - path to the pdflatex executable
+    resume_output_file_name - name of the output resume file
+    coverletter_output_file_name - name of the output cover letter file
 
     Output:
     tailored_resume_path - path to the tailored resume file
@@ -29,8 +36,14 @@ class JobTailor:
     """
     
     def __init__(self, resume_path, job_description, gemini_key, optional_params=None):
-        
-        print("called constructor")
+         
+        print("- initializing JobTailor -")
+        logger.info("constructur called.")
+        logger.debug(f"""
+            resume_path: {resume_path},
+            job_description: {job_description},
+            optional_params: {optional_params}
+        """)
 
         # set mandatory parameters
         self.resume_path = resume_path
@@ -40,6 +53,8 @@ class JobTailor:
         # set optional parameters
         self.output_dir = os.path.join(module_dir, "output/")
         self.pdflatex_path = 'pdflatex'
+        self.resume_output_file_name = 'jobtailor-curated-resume.pdf'
+        self.coverletter_output_file_name = 'jobtailor-curated-coverletter.docx'
 
         # set default variables
         self.prompts_dir = os.path.join(module_dir, "prompts/")
@@ -121,7 +136,8 @@ class JobTailor:
     
     # function to convert job description to json
     def job_description_to_json(self):
-
+        print("- converting job description to json -")
+        
         logger.info("job_description_to_json called.")
 
         job_description_prompt = read_prompt(self.prompts_dir, "extract-job.txt")
@@ -141,6 +157,7 @@ class JobTailor:
     
     # function to convert resume to json
     def resume_to_json(self):
+        print("- converting resume to json -")
 
         logger.info("resume_to_json called.")
 
@@ -175,21 +192,30 @@ class JobTailor:
             
         
     def get_tailored_resume(self):
-        print("===called get_tailored_resume===")
+        print('- getting tailored resume from LLM -')
+
+        logger.info("get_tailored_resume called.")
         tailored_resume = self.resume_json
 
         # get tailored skills
         """"""
-        print("===tailoring the skills===")
-
+        
+        logger.info("tailoring the skills")
         skills_json = {"skills": tailored_resume["skills"]}
 
         tailored_resume_skills_prompt = read_prompt(self.prompts_dir, "tailored-skills.txt")
-        
-        tailord_skills_response = self.get_response(tailored_resume_skills_prompt + "--\n<JOB_DETAIL>" + json.dumps(self.job_description_json) + "\n</JOB_DETAIL>\n--\n<SKILLS>" + json.dumps(skills_json) + "\n</SKILLS>")
+        logger.debug(f"tailored_resume_skills_prompt: {tailored_resume_skills_prompt}")
 
-        tailord_skills_json = json.loads(tailord_skills_response.replace("```json", "").replace("```JSON", "").replace("```", ""))
-        
+        tailord_skills_response = self.get_response(tailored_resume_skills_prompt + "--\n<JOB_DETAIL>" + json.dumps(self.job_description_json) + "\n</JOB_DETAIL>\n--\n<SKILLS>" + json.dumps(skills_json) + "\n</SKILLS>")
+        logger.debug(f"tailord_skills_response: {tailord_skills_response}")
+
+        try:
+            tailord_skills_json = json.loads(tailord_skills_response.replace("```json", "").replace("```JSON", "").replace("```", ""))
+        except Exception as e:
+            logger.error(f"Error: error converting skills to json.\nDetailed error: {e}")
+            return f"Error: error converting skills to json"
+
+        # converting List to string for skills
         tailord_skills_json["skills"] # [ {}, {}, {} ]
         for skillset in tailord_skills_json["skills"]:
             if type(skillset['skills']) == list:
@@ -198,61 +224,82 @@ class JobTailor:
 
 
         tailored_resume["skills"] = tailord_skills_json["skills"]
+        logger.info('- tailored skills generated -')
 
-        print("===tailoring the work experience===")
+        print("- tailoring the work experience -")
         work_exp_json = {"work_experience": tailored_resume["work_experience"]}
 
         tailored_resume_workex_prompt = read_prompt(self.prompts_dir, "tailored-experience.txt")
-        
+        logger.debug(f"tailored_resume_workex_prompt: {tailored_resume_workex_prompt}")
+
         tailord_workex_response = self.get_response(tailored_resume_workex_prompt + "--\n<JOB_DETAIL>" + json.dumps(self.job_description_json) + "\n</JOB_DETAIL>\n--\n<WORK>" + json.dumps(work_exp_json) + "\n</WORK>")
+        logger.debug(f"tailord_workex_response: {tailord_workex_response}")
 
-        tailord_workex_json = json.loads(tailord_workex_response.replace("```json", "").replace("```JSON", "").replace("```", ""))
-        
-        tailored_resume["work_experience"] = tailord_workex_json["work_experience"]
+        try:
+            tailord_workex_json = json.loads(tailord_workex_response.replace("```json", "").replace("```JSON", "").replace("```", ""))
+            tailored_resume["work_experience"] = tailord_workex_json["work_experience"]
+        except Exception as e:
+            logger.error(f"Error: error converting work experience to json.\nDetailed error: {e}")
+            return f"Error: error converting work experience to json"
 
-        print("===tailoring the projects===")
+        print("- tailoring the projects -")
         projects_json = {"projects": tailored_resume["projects"]}
 
         tailored_resume_project_prompt = read_prompt(self.prompts_dir, "tailored-projects.txt")
+        logger.debug(f"tailored_resume_project_prompt: {tailored_resume_project_prompt}")
 
         tailord_projects_response = self.get_response(tailored_resume_project_prompt + "--\n<JOB_DETAIL>" +  json.dumps(self.job_description_json) + "\n</JOB_DETAIL>\n--\n<PROJECTS>" + json.dumps(projects_json) + "\n</PROJECTS>")
+        logger.debug(f"tailord_projects_response: {tailord_projects_response}")
 
-        tailord_projects_json = json.loads(tailord_projects_response.replace("```json", "").replace("```JSON", "").replace("```", ""))
-        tailored_resume["projects"] = tailord_projects_json["projects"]
+        try:
+            tailord_projects_json = json.loads(tailord_projects_response.replace("```json", "").replace("```JSON", "").replace("```", ""))
+            tailored_resume["projects"] = tailord_projects_json["projects"]
+        except Exception as e:
+            logger.error(f"Error: error converting projects to json.\nDetailed error: {e}")
+            return f"Error: error converting projects to json"
         
+        print("- tailored resume JSON generated -")
         return tailored_resume
 
     def generate_resume_pdf(self):
 
+        print('- compiling LaTex to generate resume PDF -')
+        logger.info("generate_resume_pdf called.")
+
         # Set up the Jinja2 environment
         template_dir = os.path.join(module_dir, "resources")
         env = Environment(loader=FileSystemLoader(template_dir))
-        # file_loader = FileSystemLoader('.')
-        # env = Environment(loader=file_loader)
+        logger.debug(f"template_dir: {template_dir}")
 
         # Load the LaTeX template
         try:
-
-            # template_path = os.path.join(self.resources_dir, "jakes_template.tex")
-            # template = env.get_template(template_path)
-            # Render the template with the data
-            # jakes_template_path = os.path.join("./resources", "jakes_template.tex")
             template = env.get_template("jakes_template.tex")
             rendered_tex = template.render(process_json(self.tailored_resume))
         except Exception as e:
-            print(f"Error: {e}")
-            print(f"Current working directory: {os.getcwd()}")
+            logger.error(f"Error while rendering Latex Template: {e}")
+            return f"Error while rendering Latex Template. Check log for more details"
         
         # Write the rendered LaTeX to a file
         output_tex_path = os.path.join(self.output_dir, "curated_template.tex")
+        logger.debug(f"output_tex_path: {output_tex_path}")
+
         with open(output_tex_path, 'w') as f:
             f.write(rendered_tex)
 
         # compile the latex file
+        print("- System command - compiling LaTex to generate resume PDF -")
         pdflatex_command = f"'{self.pdflatex_path}' -output-directory '{self.output_dir}' '{output_tex_path}'"
-        os.system(pdflatex_command)
+        logger.debug(f"pdflatex_command: {pdflatex_command}")
 
+        try:
+            logger.info("pdflatex command")
+            os.system(pdflatex_command)
+        except Exception as e:
+            logger.error(f"Error while compiling Latex: {e}")
+            return f"Error while compiling Latex. Check log for more details"
+        
         # delete the intermediate files
+        logger.info('deleting intermediate files')
         intermediate_files = ["curated_template.aux", "curated_template.log", "curated_template.out", "curated_template.tex"]
         for file in intermediate_files:
             file_path = os.path.join(self.output_dir, file)
@@ -262,41 +309,55 @@ class JobTailor:
                 elif os.path.isdir(file_path):
                     shutil.rmtree(file_path)
             except Exception as e:
-                print('Failed to delete %s. Reason: %s' % (file_path, e))
+                logger.error('Failed to delete %s. Reason: %s' % (file_path, e))
+                return ('Failed to delete %s. Reason: %s' % (file_path, e))
 
         # rename pdf file
-        os.rename(os.path.join(self.output_dir, "curated_template.pdf"), os.path.join(self.output_dir, "jobtailor-curated-resume.pdf"))
-        
+        logger.info('renaming pdf file to outputfilename')
+        os.rename(os.path.join(self.output_dir, "curated_template.pdf"), os.path.join(self.output_dir, self.resume_output_file_name))
 
-        return os.path.join(self.output_dir, "jobtailor-curated-resume.pdf")
+        return os.path.join(self.output_dir, self.resume_output_file_name)
         # return resume_path_ne
 
     # function to get the paragraph for the cover letter
     def get_tailored_coverletter(self):
-        print("===get_tailored_coverletter===")
+        print('- getting tailored cover letter from LLM and generating DOCX -')
+
         tailored_coverletter_prompt = read_prompt(self.prompts_dir, "extract-coverletter.txt")
-        
+        logger.debug(f"tailored_coverletter_prompt: {tailored_coverletter_prompt}")
+
         # tailord_coverletter_content = self.get_response(tailored_coverletter_prompt + "--\n<JOB_DETAIL>" + json.dumps(self.job_description_json) + "\n</JOB_DETAIL>\n")
         tailord_coverletter_content = self.get_response(tailored_coverletter_prompt + "--\n<JOB_DETAIL>" + json.dumps(self.job_description_json) + "\n</JOB_DETAIL>\n--\n<WORK_INFORMATION>" + json.dumps(self.tailored_resume) + "\n</WORK_INFORMATION>")
-        tailord_coverletter_content = tailord_coverletter_content.replace("```json", "").replace("```JSON", "").replace("```", "")
+        logger.debug(f"tailord_coverletter_content: {tailord_coverletter_content}")
 
-        replacements = {
-            "{{name}}": self.tailored_resume["name"],
-            "{{location}}": self.tailored_resume["location"],
-            "{{email}}": self.tailored_resume["email"],
-            "{{phone}}": self.tailored_resume["phone"],
-            "{{website}}": self.tailored_resume["website"],
-            "{{coverletter_content}}": tailord_coverletter_content
-        }
-
+        try:
+            tailord_coverletter_content = tailord_coverletter_content.replace("```json", "").replace("```JSON", "").replace("```", "")
+        except Exception as e:
+            logger.error(f"Error: error getting cover letter content.\nDetailed error: {e}")
+            return f"Error: error getting cover letter content"
+        
         coverletter_template_path = os.path.join(self.resources_dir, "jobtailor-coverletter.docx")
-        coverletter_curated_path = os.path.join(self.output_dir, "jobtailor-curated-coverletter.docx")
-        doc = Document(coverletter_template_path)
+        coverletter_curated_path = os.path.join(self.output_dir, self.coverletter_output_file_name)
+        try:
+            replacements = {
+                "{{name}}": self.tailored_resume["name"],
+                "{{location}}": self.tailored_resume["location"],
+                "{{email}}": self.tailored_resume["email"],
+                "{{phone}}": self.tailored_resume["phone"],
+                "{{website}}": self.tailored_resume["website"],
+                "{{coverletter_content}}": tailord_coverletter_content
+            }
+            
+            doc = Document(coverletter_template_path)
+            # Replace placeholders with actual values
+            replace_placeholders(doc, replacements)
 
-        # Replace placeholders with actual values
-        replace_placeholders(doc, replacements)
-
-        # Save the resulting document
-        doc.save(coverletter_curated_path)
-
+            # Save the resulting document
+            doc.save(coverletter_curated_path)
+        except Exception as e:
+            logger.error(f"Error: error replacing placeholders in cover letter.\nDetailed error: {e}")
+            return f"Error: error replacing placeholders in cover letter"
+        
+        logger.info('tailored cover letter generated')
+        print("- tailored cover letter generated -")
         return coverletter_curated_path
