@@ -36,12 +36,17 @@ pip install jobtailor
 from jobtailor import JobTailor
 
 jt = JobTailor(
-    "resume_path", 
-    "job_description (text)", 
-    "gemini_key", 
-    "output_dir (optional)", 
-    "pdflatex_path (optional)"
+    resume_path='<resume_path>', 
+    job_description='<job_description_text>', 
+    gemini_key='<gemini_key>', 
+    optional_params={
+        "output_dir": "<output_dir>", # Default: "./output/"
+        "pdflatex_path": "<pdflatex_installation_path>/pdflatex", # Default is "pdflatex" global access
+        "resume_output_file_name": "<desired_resume_output_file_name>.pdf", # Default: jobtailor-curated-resume.pdf 
+        "coverletter_output_file_name": "<desired_coverletter_output_file_name>.docx" # Default: jobtailor-curated-coverletter.docx
+    }
 )
-print(f"FINAL RESUME: {jt.tailored_resume_path}")
-print(f"FINAL COVERLETTER: {jt.tailored_coverletter_path}")
+
+print("FINAL RESUME = " + jt.tailored_resume_path)
+print("FINAL COVERLETTER = " + jt.tailored_coverletter_path)
 ```
