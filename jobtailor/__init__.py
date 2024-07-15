@@ -29,6 +29,7 @@ class JobTailor:
     pdflatex_path - path to the pdflatex executable
     resume_output_file_name - name of the output resume file
     coverletter_output_file_name - name of the output cover letter file
+    write_function - function to write the status
 
     Output:
     tailored_resume_path - path to the tailored resume file
@@ -37,7 +38,6 @@ class JobTailor:
     
     def __init__(self, resume_path, job_description, gemini_key, optional_params=None):
          
-        print("- initializing JobTailor -")
         logger.info("constructur called.")
         logger.debug(f"""
             resume_path: {resume_path},
@@ -55,6 +55,7 @@ class JobTailor:
         self.pdflatex_path = 'pdflatex'
         self.resume_output_file_name = 'jobtailor-curated-resume.pdf'
         self.coverletter_output_file_name = 'jobtailor-curated-coverletter.docx'
+        self.write_function = print
 
         # set default variables
         self.prompts_dir = os.path.join(module_dir, "prompts/")
@@ -136,7 +137,7 @@ class JobTailor:
     
     # function to convert job description to json
     def job_description_to_json(self):
-        print("- converting job description to json -")
+        self.write_function("- converting job description to json -")
         
         logger.info("job_description_to_json called.")
 
@@ -157,7 +158,7 @@ class JobTailor:
     
     # function to convert resume to json
     def resume_to_json(self):
-        print("- converting resume to json -")
+        self.write_function("- converting resume to json -")
 
         logger.info("resume_to_json called.")
 
@@ -192,7 +193,7 @@ class JobTailor:
             
         
     def get_tailored_resume(self):
-        print('- getting tailored resume from LLM -')
+        self.write_function('- getting tailored resume from LLM -')
 
         logger.info("get_tailored_resume called.")
         tailored_resume = self.resume_json
@@ -226,7 +227,7 @@ class JobTailor:
         tailored_resume["skills"] = tailord_skills_json["skills"]
         logger.info('- tailored skills generated -')
 
-        print("- tailoring the work experience -")
+        self.write_function("- tailoring the work experience -")
         work_exp_json = {"work_experience": tailored_resume["work_experience"]}
 
         tailored_resume_workex_prompt = read_prompt(self.prompts_dir, "tailored-experience.txt")
@@ -242,7 +243,7 @@ class JobTailor:
             logger.error(f"Error: error converting work experience to json.\nDetailed error: {e}")
             return f"Error: error converting work experience to json"
 
-        print("- tailoring the projects -")
+        self.write_function("- tailoring the projects -")
         projects_json = {"projects": tailored_resume["projects"]}
 
         tailored_resume_project_prompt = read_prompt(self.prompts_dir, "tailored-projects.txt")
@@ -258,12 +259,12 @@ class JobTailor:
             logger.error(f"Error: error converting projects to json.\nDetailed error: {e}")
             return f"Error: error converting projects to json"
         
-        print("- tailored resume JSON generated -")
+        self.write_function("- tailored resume JSON generated -")
         return tailored_resume
 
     def generate_resume_pdf(self):
 
-        print('- compiling LaTex to generate resume PDF -')
+        self.write_function('- compiling LaTex to generate resume PDF -')
         logger.info("generate_resume_pdf called.")
 
         # Set up the Jinja2 environment
@@ -287,7 +288,7 @@ class JobTailor:
             f.write(rendered_tex)
 
         # compile the latex file
-        print("- System command - compiling LaTex to generate resume PDF -")
+        self.write_function("- System command - compiling LaTex to generate resume PDF -")
         pdflatex_command = f"'{self.pdflatex_path}' -output-directory '{self.output_dir}' '{output_tex_path}'"
         logger.debug(f"pdflatex_command: {pdflatex_command}")
 
@@ -321,7 +322,7 @@ class JobTailor:
 
     # function to get the paragraph for the cover letter
     def get_tailored_coverletter(self):
-        print('- getting tailored cover letter from LLM and generating DOCX -')
+        self.write_function('- getting tailored cover letter from LLM and generating DOCX -')
 
         tailored_coverletter_prompt = read_prompt(self.prompts_dir, "extract-coverletter.txt")
         logger.debug(f"tailored_coverletter_prompt: {tailored_coverletter_prompt}")
@@ -359,5 +360,5 @@ class JobTailor:
             return f"Error: error replacing placeholders in cover letter"
         
         logger.info('tailored cover letter generated')
-        print("- tailored cover letter generated -")
+        self.write_function("- tailored cover letter generated -")
         return coverletter_curated_path
