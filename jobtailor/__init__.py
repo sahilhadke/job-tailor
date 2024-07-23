@@ -7,6 +7,7 @@ import logging
 from docx import Document
 from jinja2 import Environment, FileSystemLoader
 import google.generativeai as genai
+import subprocess
 from .utils.functions import process_json, replace_placeholders, read_prompt
 
 # logging
@@ -294,7 +295,9 @@ class JobTailor:
 
         try:
             logger.info("pdflatex command")
-            os.system(pdflatex_command)
+            # subprocess.run(pdflatex_command, shell=True)
+            subprocess.run(pdflatex_command, shell=True, check=True)
+            # os.system(pdflatex_command)
         except Exception as e:
             logger.error(f"Error while compiling Latex: {e}")
             return f"Error while compiling Latex. Check log for more details"
