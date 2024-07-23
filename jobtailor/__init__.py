@@ -61,10 +61,6 @@ class JobTailor:
         self.prompts_dir = os.path.join(module_dir, "prompts/")
         self.resources_dir = os.path.join(module_dir, "resources/")
 
-        # if output directory not present, create it
-        if not os.path.exists(self.output_dir):
-            os.makedirs(self.output_dir)
-
         # if optional parameters are provided, set them
         if optional_params:
             for key, value in optional_params.items():
@@ -72,6 +68,10 @@ class JobTailor:
                     setattr(self, key, value)
                 else:
                     setattr(self, key, value)
+        
+        # if output directory not present, create it
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
         
         # initialize genai
         try:

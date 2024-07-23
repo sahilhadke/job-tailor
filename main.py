@@ -23,7 +23,7 @@ What you bring to the team...
 Are pursuing a bachelor’s, master’s, or PhD in computer science, electrical engineering, computer engineering, physics, mathematics or any related science discipline and have an expected graduation date between December 2025 and June 2026
 Have exposure to network programming (TCP/IP), multi‐threaded applications, computational intelligence, algorithms, real‐time programming or GUI programming
 Have strong understanding of object-oriented design, data structures, and algorithms
-Exhibit excellent software development skills in C++, Python, Java, C#, or C and a deep curiosity to learn and absorb new technologies quickly
+Exhibit excellent software development skills in C++, Python, Java, or C and a deep curiosity to learn and absorb new technologies quickly
 """
 
 optional_params = {
