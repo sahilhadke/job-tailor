@@ -7,6 +7,7 @@ import logging
 from docx import Document
 from jinja2 import Environment, FileSystemLoader
 import google.generativeai as genai
+import subprocess
 from .utils.functions import process_json, replace_placeholders, read_prompt
 import subprocess
 
