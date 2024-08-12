@@ -8,6 +8,7 @@ from docx import Document
 from jinja2 import Environment, FileSystemLoader
 import google.generativeai as genai
 from .utils.functions import process_json, replace_placeholders, read_prompt
+import subprocess
 
 # logging
 logger = logging.getLogger(__name__)
@@ -275,7 +276,9 @@ class JobTailor:
         # Load the LaTeX template
         try:
             template = env.get_template("jakes_template.tex")
-            rendered_tex = template.render(process_json(self.tailored_resume))
+            processed_json = process_json(self.tailored_resume)
+            logger.debug(f"processed_json: {processed_json}")
+            rendered_tex = template.render(processed_json)
         except Exception as e:
             logger.error(f"Error while rendering Latex Template: {e}")
             return f"Error while rendering Latex Template. Check log for more details"
@@ -294,10 +297,16 @@ class JobTailor:
 
         try:
             logger.info("pdflatex command")
-            os.system(pdflatex_command)
-        except Exception as e:
+            subprocess.run(pdflatex_command, shell=True, check=True, timeout=30)
+        except subprocess.TimeoutExpired:
+            logger.error("pdflatex command timed out after 30 seconds")
+            return "Error: pdflatex command timed out. Check log for more details."
+        except subprocess.CalledProcessError as e:
             logger.error(f"Error while compiling Latex: {e}")
-            return f"Error while compiling Latex. Check log for more details"
+            return f"Error while compiling Latex. Check log for more details."
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
+            return f"Unexpected error. Check log for more details."
         
         # delete the intermediate files
         logger.info('deleting intermediate files')
@@ -324,21 +333,33 @@ class JobTailor:
     def get_tailored_coverletter(self):
         self.write_function('- getting tailored cover letter from LLM and generating DOCX -')
 
-        tailored_coverletter_prompt = read_prompt(self.prompts_dir, "extract-coverletter.txt")
-        logger.debug(f"tailored_coverletter_prompt: {tailored_coverletter_prompt}")
-
-        # tailord_coverletter_content = self.get_response(tailored_coverletter_prompt + "--\n<JOB_DETAIL>" + json.dumps(self.job_description_json) + "\n</JOB_DETAIL>\n")
-        tailord_coverletter_content = self.get_response(tailored_coverletter_prompt + "--\n<JOB_DETAIL>" + json.dumps(self.job_description_json) + "\n</JOB_DETAIL>\n--\n<WORK_INFORMATION>" + json.dumps(self.tailored_resume) + "\n</WORK_INFORMATION>")
-        logger.debug(f"tailord_coverletter_content: {tailord_coverletter_content}")
-
         try:
+
+            tailored_coverletter_prompt = read_prompt(self.prompts_dir, "extract-coverletter.txt")
+            logger.debug(f"tailored_coverletter_prompt: {tailored_coverletter_prompt}")
+            
+            full_prompt = tailored_coverletter_prompt + "--\n<JOB_DETAIL>" + json.dumps(self.job_description_json) + "\n</JOB_DETAIL>\n--\n<WORK_INFORMATION>" + json.dumps(self.tailored_resume) + "\n</WORK_INFORMATION>"
+            logger.debug(f"full_prompt: {full_prompt}")
+        except Exception as e:
+            logger.error(f"Error: error getting cover letter prompt.\nDetailed error: {e}")
+            return f"Error: error getting cover letter prompt"
+        
+        try:
+            # tailord_coverletter_content = self.get_response(tailored_coverletter_prompt + "--\n<JOB_DETAIL>" + json.dumps(self.job_description_json) + "\n</JOB_DETAIL>\n")
+            tailord_coverletter_content = self.get_response(full_prompt)
+            logger.debug(f"tailord_coverletter_content: {tailord_coverletter_content}")
             tailord_coverletter_content = tailord_coverletter_content.replace("```json", "").replace("```JSON", "").replace("```", "")
         except Exception as e:
             logger.error(f"Error: error getting cover letter content.\nDetailed error: {e}")
             return f"Error: error getting cover letter content"
         
+        if not tailord_coverletter_content:
+            logger.error(f"Error: error getting cover letter content.")
+            return f"Error: error getting cover letter content"
+
         coverletter_template_path = os.path.join(self.resources_dir, "jobtailor-coverletter.docx")
         coverletter_curated_path = os.path.join(self.output_dir, self.coverletter_output_file_name)
+        
         try:
             replacements = {
                 "{{name}}": self.tailored_resume["name"],
